@@ -127,7 +127,7 @@ const generateAnalyzerPage = (svgFileDirectory, options) => {
 
 program
   .arguments("<file>")
-  .option("-f, --file", "folder patch for svg assets")
+  .option("-f, --file", "folder path for svg assets")
   .option("-o, --optimize", "Do SVGO optimization")
   .action(function(file) {
     generateAnalyzerPage(file, { shouldOptimize: program.optimize });
