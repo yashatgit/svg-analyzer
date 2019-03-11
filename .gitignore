@@ -1,0 +1,14 @@
+node_modules
+npm-debug*
+package-lock.json
+yarn.lock
+.env
+yarn-error.log
+
+# Compiled files
+build/
+.idea
+.vscode
+
+# OS Files
+.DS_Store
