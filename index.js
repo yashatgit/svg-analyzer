@@ -1,6 +1,3 @@
-/*
-    read sizes and dom nodes
-*/
 //libs
 const fs = require("fs");
 const exec = require("child_process").exec;
@@ -47,16 +44,24 @@ const getPercentageImprovement = ({ size, svgo_size }) => {
   return parseFloat((((size - svgo_size) / size) * 100).toFixed(2));
 };
 
+const findDOMNodesLength = (fileContent) => {
+  return fileContent.match(/<[^>]+>/g).length - fileContent.match(/<\//g).length;
+};
+
 const buildSvgStats = options => {
   const allStats = [];
   const { shouldOptimize } = options;
-  fs.readdirSync(BUILD_ASSETS_DIR).forEach(file => {
+  fs.readdirSync(BUILD_ASSETS_DIR).forEach((file, index) => {
     const extension = path.extname(file);
-    if (extension === ".svg") {
-      const stats = fs.statSync(`${BUILD_ASSETS_DIR}/${file}`);
+    const filePath = `${BUILD_ASSETS_DIR}/${file}`;
+    if (extension === ".svg") {     
+      const fileContents = fs.readFileSync(filePath);
+      const stats = fs.statSync(filePath);
+
       let svgFullStats = {
         filename: file,
-        size: parseInt(stats.size)
+        size: parseInt(stats.size),
+        nodes: findDOMNodesLength(fileContents.toString()),
       };
       if (shouldOptimize) {
         const svgo_stats = fs.statSync(`${BUILD_ASSETS_SVGO_DIR}/${file}`);
@@ -101,7 +106,6 @@ const generateHtmlPage = svgStats => {
 const buildAnalyzerPage = svgStats => {
   fsEx.copySync(LIBS_DIR, `${[BUILD_DIR]}`);
   generateHtmlPage(svgStats); //generate HTML template
-  opn("./build/index.html");
 };
 
 /*
@@ -115,13 +119,10 @@ Generate webpage from the generated HTML file.
   - app.js : JS stuff
 */
 const generateAnalyzerPage = (svgFileDirectory, options) => {
-  //const svgFileDirectory = "/Users/Yash/Sprinklr/spr/sprinklr-app-client/packages/spr-space/assets/icons/";
-  // const svgFileDirectory =
-  // "/Users/Yash/Sprinklr/spr/sprinklr-app-client/packages/spr-main-web/src/app/img/";
-
   copyAssetsToBuildDirectory(svgFileDirectory, options, () => {
     const svgStats = buildSvgStats(options);
     buildAnalyzerPage(svgStats);
+    opn("./build/index.html");
   });
 };
 
