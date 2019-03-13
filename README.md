@@ -16,9 +16,10 @@ Analyse your SVG assets library for saving those extra bytes and DOM nodes.
 Usage: npx svgo-analyzer "--path-to-svg-assets" -o
 
 Options:
-  -f, --file      folder path for svg assets
-  -o, --optimize  Do SVGO optimization
-  -h, --help      output usage information
+  -o, --optimize   Do SVGO optimization. Defaults to false
+  -n, --nodes <n>  Nodes threshold. Defaults to 8
+  -s, --size <n>   Size threshold in bytes. Defaults to 400 bytes
+  -h, --help       output usage information
 ```
 
 ## Screenshot
