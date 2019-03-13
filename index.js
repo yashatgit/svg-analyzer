@@ -22,7 +22,7 @@ const copyAssetsToBuildDirectory = (srcDirectory, params, callback) => {
     //copy assets
     fsEx.copySync(srcDirectory, BUILD_ASSETS_DIR);
 
-    if (params.shouldOptimize) {
+    if (params.svgo_optimize) {
       console.log("Optimising SVG asssets with SVGO");
       exec(
         `./node_modules/svgo/bin/svgo -f ${srcDirectory} -o ${BUILD_ASSETS_SVGO_DIR}`,
@@ -50,7 +50,7 @@ const findDOMNodesLength = (fileContent) => {
 
 const buildSvgStats = options => {
   const allStats = [];
-  const { shouldOptimize } = options;
+  const { svgo_optimize } = options;
   fs.readdirSync(BUILD_ASSETS_DIR).forEach((file, index) => {
     const extension = path.extname(file);
     const filePath = `${BUILD_ASSETS_DIR}/${file}`;
@@ -63,7 +63,7 @@ const buildSvgStats = options => {
         size: parseInt(stats.size),
         nodes: findDOMNodesLength(fileContents.toString()),
       };
-      if (shouldOptimize) {
+      if (svgo_optimize) {
         const svgo_stats = fs.statSync(`${BUILD_ASSETS_SVGO_DIR}/${file}`);
         svgFullStats.svgo_size = parseInt(svgo_stats.size);
         svgFullStats.svgo_improvement = getPercentageImprovement(svgFullStats);
@@ -74,7 +74,7 @@ const buildSvgStats = options => {
   return allStats;
 };
 
-const generateHtmlPage = svgStats => {
+const generateHtmlPage = appData => {
   const htmlFileTemplate = `
       <!DOCTYPE html>
       <html>
@@ -93,7 +93,7 @@ const generateHtmlPage = svgStats => {
             <div id="svg-palette"></div>    
         </div>
         </body>
-        <script>window.svgStats=${JSON.stringify(svgStats)}</script>        
+        <script>window.appData=${JSON.stringify(appData)}</script>        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.core.min.js" type="text/javascript"></script>
         <script src="./app.js" type="text/javascript"></script>
       </html>
@@ -103,9 +103,9 @@ const generateHtmlPage = svgStats => {
   console.log("SVG analyzer page generated!");
 };
 
-const buildAnalyzerPage = svgStats => {
+const buildAnalyzerPage = embedOptions => {
   fsEx.copySync(LIBS_DIR, `${[BUILD_DIR]}`);
-  generateHtmlPage(svgStats); //generate HTML template
+  generateHtmlPage(embedOptions); //generate HTML template
 };
 
 /*
@@ -121,15 +121,29 @@ Generate webpage from the generated HTML file.
 const generateAnalyzerPage = (svgFileDirectory, options) => {
   copyAssetsToBuildDirectory(svgFileDirectory, options, () => {
     const svgStats = buildSvgStats(options);
-    buildAnalyzerPage(svgStats);
+    buildAnalyzerPage({
+      ...options,
+      svgStats
+    });
     opn("./build/index.html");
   });
 };
 
+const defaults = {
+  svgo_optimize: false,
+  nodes_threshold: 8,
+  size_threshold: 400,
+};
 program
   .arguments("<file>")
-  .option("-o, --optimize", "Do SVGO optimization")
+  .option("-o, --optimize", `Do SVGO optimization. Defaults to ${defaults.svgo_optimize}`)
+  .option("-n, --nodes <n>", `Nodes threshold. Defaults to ${defaults.nodes_threshold}`, parseInt)
+  .option("-s, --size <n>", `Size threshold in bytes. Defaults to ${defaults.size_threshold} bytes`, parseInt)
   .action(function(file) {
-    generateAnalyzerPage(file, { shouldOptimize: program.optimize });
+    generateAnalyzerPage(file, {
+      svgo_optimize: program.optimize || defaults.svgo_optimize,
+      nodes_threshold: program.nodes || defaults.nodes_threshold,
+      size_threshold: program.size || defaults.size_threshold,
+    });
   })
   .parse(process.argv);
