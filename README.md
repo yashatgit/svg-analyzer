@@ -22,4 +22,4 @@ Options:
 ```
 
 ## Screenshot
-![](screenshots/1.jpg)
+![](https://github.com/yashatgit/svg-analyzer/raw/master/screenshots/1.jpg)
