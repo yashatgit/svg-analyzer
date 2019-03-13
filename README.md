@@ -2,7 +2,7 @@
 
 [![npm (scoped)](https://img.shields.io/npm/v/svg-analyzer.svg)](https://www.npmjs.com/package/svg-analyzer)
 
-Analyse your SVG assets library for saving those extra buyes and DOM nodes.
+Analyse your SVG assets library for saving those extra bytes and DOM nodes.
 
 ## Supports:
 * Preview of all the assets
