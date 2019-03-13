@@ -23,4 +23,4 @@ Options:
 ```
 
 ## Screenshot
-![](https://github.com/yashatgit/svg-analyzer/raw/master/screenshots/1.jpeg)
+![](https://github.com/yashatgit/svg-analyzer/raw/master/screenshots/1.jpg)
