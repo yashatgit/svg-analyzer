@@ -1,15 +1,21 @@
 {
   "name": "svg-analyzer",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Analyse your SVG assets library for saving those extra bytes and DOM nodes",
-  "keywords": ["svg", "analyze", "svgo", "size", "assets"],
+  "keywords": [
+    "svg",
+    "analyze",
+    "svgo",
+    "size",
+    "assets"
+  ],
   "homepage": "https://github.com/yashatgit/svg-analyzer#readme",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "bin" : { 
-    "svg-analyzer" : "./index.js" 
+  "bin": {
+    "svg-analyzer": "./index.js"
   },
   "author": {
     "name": "Yash Soni",
