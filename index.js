@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 //libs
 const fs = require("fs");
 const exec = require("child_process").exec;
@@ -54,7 +56,7 @@ const buildSvgStats = options => {
   fs.readdirSync(BUILD_ASSETS_DIR).forEach((file, index) => {
     const extension = path.extname(file);
     const filePath = `${BUILD_ASSETS_DIR}/${file}`;
-    if (extension === ".svg") {     
+    if (extension === ".svg") {
       const fileContents = fs.readFileSync(filePath);
       const stats = fs.statSync(filePath);
 
