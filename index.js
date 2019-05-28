@@ -15,7 +15,7 @@ const program = require("commander");
 const BUILD_DIR = "./build";
 const BUILD_ASSETS_DIR = `${[BUILD_DIR]}/assets`;
 const BUILD_ASSETS_SVGO_DIR = `${[BUILD_DIR]}/svgo_assets`;
-const LIBS_DIR = "./lib";
+const LIBS_DIR = path.resolve(__dirname, 'lib');
 
 const copyAssetsToBuildDirectory = (srcDirectory, params, callback) => {
   rimraf(BUILD_DIR, function(err) {
