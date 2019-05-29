@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 //libs
 const fs = require("fs");
 const exec = require("child_process").exec;
@@ -13,7 +15,7 @@ const program = require("commander");
 const BUILD_DIR = "./build";
 const BUILD_ASSETS_DIR = `${[BUILD_DIR]}/assets`;
 const BUILD_ASSETS_SVGO_DIR = `${[BUILD_DIR]}/svgo_assets`;
-const LIBS_DIR = "./lib";
+const LIBS_DIR = path.resolve(__dirname, 'lib');
 
 const copyAssetsToBuildDirectory = (srcDirectory, params, callback) => {
   rimraf(BUILD_DIR, function(err) {
@@ -54,7 +56,7 @@ const buildSvgStats = options => {
   fs.readdirSync(BUILD_ASSETS_DIR).forEach((file, index) => {
     const extension = path.extname(file);
     const filePath = `${BUILD_ASSETS_DIR}/${file}`;
-    if (extension === ".svg") {     
+    if (extension === ".svg") {
       const fileContents = fs.readFileSync(filePath);
       const stats = fs.statSync(filePath);
 
