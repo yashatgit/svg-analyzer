@@ -10,24 +10,29 @@ const _ = require("lodash");
 const fsEx = require("fs-extra");
 const rimraf = require("rimraf");
 const opn = require("opn");
+const open = require("open");
 const program = require("commander");
 
-const BUILD_DIR = "./build";
-const BUILD_ASSETS_DIR = `${[BUILD_DIR]}/assets`;
-const BUILD_ASSETS_SVGO_DIR = `${[BUILD_DIR]}/svgo_assets`;
 const LIBS_DIR = path.resolve(__dirname, 'lib');
+let buildDir;
+
+const setBuildDir = dir => buildDir = dir;
+const getBuildDir = () => buildDir;
+const getBuildAssetsDir = () => `${[buildDir]}/assets`;
+const getBuildSvgoAssetsDir = () => `${[buildDir]}/svgo_assets`;
+
 
 const copyAssetsToBuildDirectory = (srcDirectory, params, callback) => {
-  rimraf(BUILD_DIR, function(err) {
-    fs.mkdirSync(BUILD_DIR);
-    fs.mkdirSync(BUILD_ASSETS_SVGO_DIR);
+  rimraf(getBuildDir(), function(err) {
+    fs.mkdirSync(getBuildDir());
+    fs.mkdirSync(getBuildSvgoAssetsDir());
     //copy assets
-    fsEx.copySync(srcDirectory, BUILD_ASSETS_DIR);
+    fsEx.copySync(srcDirectory, getBuildAssetsDir());
 
     if (params.svgo_optimize) {
       console.log("Optimising SVG asssets with SVGO");
       exec(
-        `./node_modules/svgo/bin/svgo -f ${srcDirectory} -o ${BUILD_ASSETS_SVGO_DIR}`,
+        `./node_modules/svgo/bin/svgo -f ${srcDirectory} -o ${getBuildSvgoAssetsDir()}`,
         (error, stdout, stderr) => {
           //console.log(`stdout: ${stdout}`);
           if (!error) {
@@ -53,9 +58,9 @@ const findDOMNodesLength = (fileContent) => {
 const buildSvgStats = options => {
   const allStats = [];
   const { svgo_optimize } = options;
-  fs.readdirSync(BUILD_ASSETS_DIR).forEach((file, index) => {
+  fs.readdirSync(getBuildAssetsDir()).forEach((file, index) => {
     const extension = path.extname(file);
-    const filePath = `${BUILD_ASSETS_DIR}/${file}`;
+    const filePath = `${getBuildAssetsDir()}/${file}`;
     if (extension === ".svg") {
       const fileContents = fs.readFileSync(filePath);
       const stats = fs.statSync(filePath);
@@ -66,7 +71,7 @@ const buildSvgStats = options => {
         nodes: findDOMNodesLength(fileContents.toString()),
       };
       if (svgo_optimize) {
-        const svgo_stats = fs.statSync(`${BUILD_ASSETS_SVGO_DIR}/${file}`);
+        const svgo_stats = fs.statSync(`${getBuildSvgoAssetsDir()}/${file}`);
         svgFullStats.svgo_size = parseInt(svgo_stats.size);
         svgFullStats.svgo_improvement = getPercentageImprovement(svgFullStats);
       }
@@ -101,12 +106,12 @@ const generateHtmlPage = appData => {
       </html>
       `;
 
-  fs.writeFileSync(`${BUILD_DIR}/index.html`, htmlFileTemplate);
+  fs.writeFileSync(`${getBuildDir()}/index.html`, htmlFileTemplate);
   console.log("SVG analyzer page generated!");
 };
 
 const buildAnalyzerPage = embedOptions => {
-  fsEx.copySync(LIBS_DIR, `${[BUILD_DIR]}`);
+  fsEx.copySync(LIBS_DIR, `${[getBuildDir()]}`);
   generateHtmlPage(embedOptions); //generate HTML template
 };
 
@@ -127,7 +132,8 @@ const generateAnalyzerPage = (svgFileDirectory, options) => {
       ...options,
       svgStats
     });
-    opn("./build/index.html");
+    opn(`${getBuildDir()}/index.html`);
+    open(getBuildDir());
   });
 };
 
@@ -135,13 +141,16 @@ const defaults = {
   svgo_optimize: false,
   nodes_threshold: 8,
   size_threshold: 400,
+  output_dir: './build',
 };
 program
   .arguments("<file>")
   .option("-o, --optimize", `Do SVGO optimization. Defaults to ${defaults.svgo_optimize}`)
   .option("-n, --nodes <n>", `Nodes threshold. Defaults to ${defaults.nodes_threshold}`, parseInt)
   .option("-s, --size <n>", `Size threshold in bytes. Defaults to ${defaults.size_threshold} bytes`, parseInt)
+  .option("-O, --output <file>", 'Output directory. Defaults to current directory')
   .action(function(file) {
+    setBuildDir(program.output || defaults.output_dir);
     generateAnalyzerPage(file, {
       svgo_optimize: program.optimize || defaults.svgo_optimize,
       nodes_threshold: program.nodes || defaults.nodes_threshold,
